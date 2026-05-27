@@ -1,0 +1,17 @@
+{
+  "name": "apt-actual-price-tracker",
+  "version": "1.0.0",
+  "description": "Apartment Actual Transaction Price MVP Tracker for South Korea",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "fast-xml-parser": "^4.4.0"
+  }
+}

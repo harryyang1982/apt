@@ -7,9 +7,16 @@ import { XMLParser } from 'fast-xml-parser';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Custom .env key parser to handle multiple sections like [APT] and [kakao]
+// Custom .env key parser supporting both environment variables (Vercel) and local .env
 function getApiKeys() {
-  const keys = { apt: '', kakaoJs: '', kakaoRest: '', githubToken: '', githubOwner: '', githubRepo: '' };
+  const keys = {
+    apt: process.env.APT_KEY || '',
+    kakaoJs: process.env.KAKAO_JS_KEY || '',
+    kakaoRest: process.env.KAKAO_REST_KEY || '',
+    githubToken: process.env.GITHUB_TOKEN || '',
+    githubOwner: process.env.GITHUB_OWNER || '',
+    githubRepo: process.env.GITHUB_REPO || ''
+  };
   try {
     const envPath = path.join(process.cwd(), '.env');
     if (fs.existsSync(envPath)) {
@@ -27,22 +34,22 @@ function getApiKeys() {
           const keyName = match[1].trim().toLowerCase();
           const val = match[2].trim();
           if (currentSection === 'apt' && keyName === 'key') {
-            keys.apt = val;
+            if (!keys.apt) keys.apt = val;
           } else if (currentSection === 'kakao') {
             if (keyName === 'js_key' || keyName === 'js') {
-              keys.kakaoJs = val;
+              if (!keys.kakaoJs) keys.kakaoJs = val;
             } else if (keyName === 'rest_api_key' || keyName === 'rest') {
-              keys.kakaoRest = val;
+              if (!keys.kakaoRest) keys.kakaoRest = val;
             } else if (keyName === 'key') {
-              keys.kakaoJs = val; // fallback for general key
+              if (!keys.kakaoJs) keys.kakaoJs = val;
             }
           } else if (currentSection === 'github') {
             if (keyName === 'token' || keyName === 'key') {
-              keys.githubToken = val;
+              if (!keys.githubToken) keys.githubToken = val;
             } else if (keyName === 'owner' || keyName === 'username') {
-              keys.githubOwner = val;
+              if (!keys.githubOwner) keys.githubOwner = val;
             } else if (keyName === 'repo') {
-              keys.githubRepo = val;
+              if (!keys.githubRepo) keys.githubRepo = val;
             }
           }
         }
@@ -232,7 +239,11 @@ app.get('/api/transactions', async (req, res) => {
   }
 });
 
-// Run server
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+// Run server (only when not running in Vercel serverless environment)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+}
+
+export default app;
